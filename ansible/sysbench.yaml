@@ -1,0 +1,98 @@
+#
+# vdb / sysbench
+#
+
+- name: "vdb"
+  become: true
+  gather_facts: false
+  hosts: localhost
+
+  tasks:
+    # CORE
+    - include: core.yaml
+
+    # REPO
+    - name: "pkg: update & upgrade"
+      apt:
+        upgrade: dist
+        update_cache: yes
+
+    # PKG
+    - name: "install: tools"
+      apt:
+        pkg:
+          - curl
+          - jq
+        state: present
+
+    - name: "install: sysbench"
+      shell: |
+        curl -s https://packagecloud.io/install/repositories/akopytov/sysbench/script.deb.sh | sudo bash
+        apt -y install sysbench
+
+    # SYSBENCH
+    - name: "sysbench: init"
+      when: "{{ vdb_sysbench.data.Value | from_json }}"
+      shell: |
+        # txt
+        touch /tmp/cpu.txt
+        touch /tmp/mem.txt
+
+        # cpu
+        sudo lscpu > /tmp/cpu.txt
+        curl -T /tmp/cpu.txt {{ qa_url.data.Value }}/{{ qu_uuid.data.Value }}-$(date +%m-%d-%Y)/$(hostname)-cpu.txt
+
+        # mem
+        sudo vmstat -sa > /tmp/mem.txt
+        curl -T /tmp/mem.txt {{ qa_url.data.Value }}/{{ qu_uuid.data.Value }}-$(date +%m-%d-%Y)/$(hostname)-mem.txt
+
+        # prepare
+        sysbench \
+          --db-driver=mysql \
+          --mysql-user={{ vdb_sysbench_user.data.Value }} \
+          --mysql_password={{ vdb_sysbench_password.data.Value }} \
+          --mysql-db={{ vdb_sysbench_db.data.Value }} \
+          --mysql-host={{ vdb_master_ip.data.Value }} \
+          --mysql-port=3306 \
+          --tables={{ sysbench_tables.data.Value }} \
+          --table-size={{ sysbench_table_size.data.Value }} \
+          /usr/share/sysbench/oltp_read_write.lua prepare
+
+    - name: "sysbench: run_1"
+      when: "{{ vdb_sysbench.data.Value | from_json }}"
+      shell: |
+        # run_1
+        sysbench \
+          --db-driver=mysql \
+          --mysql-user={{ vdb_sysbench_user.data.Value }} \
+          --mysql_password={{ vdb_sysbench_password.data.Value }} \
+          --mysql-db={{ vdb_sysbench_db.data.Value }} \
+          --mysql-host={{ vdb_master_ip.data.Value }} \
+          --mysql-port=3306 \
+          --tables={{ sysbench_tables.data.Value }} \
+          --table-size={{ sysbench_table_size.data.Value }} \
+          --threads=4 \
+          --time={{ sysbench_time.data.Value }} \
+          --events=0 \
+          --report-interval=1 \
+          /usr/share/sysbench/oltp_read_write.lua run > /tmp/sysbench_run_1.txt
+        curl -T /tmp/sysbench_run_1.txt {{ qa_url.data.Value }}/{{ qu_uuid.data.Value }}-$(date +%m-%d-%Y)/sysbench_run_1.txt
+
+    - name: "sysbench: run_2"
+      when: "{{ vdb_sysbench.data.Value | from_json }}"
+      shell: |
+        sysbench \
+          --db-driver=mysql \
+          --mysql-user={{ vdb_sysbench_user.data.Value }} \
+          --mysql_password={{ vdb_sysbench_password.data.Value }} \
+          --mysql-db={{ vdb_sysbench_db.data.Value }} \
+          --mysql-host={{ vdb_master_ip.data.Value }} \
+          --mysql-port=3306 \
+          --tables={{ sysbench_tables.data.Value }} \
+          --table-size={{ sysbench_table_size.data.Value }} \
+          --threads=8 \
+          --time={{ sysbench_time.data.Value }} \
+          --events=0 \
+          --report-interval=1 \
+          /usr/share/sysbench/oltp_read_write.lua run > /tmp/sysbench_run_2.txt
+        curl -T /tmp/sysbench_run_2.txt {{ qa_url.data.Value }}/{{ qu_uuid.data.Value }}-$(date +%m-%d-%Y)/sysbench_run_2.txt

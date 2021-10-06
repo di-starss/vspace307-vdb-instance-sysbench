@@ -1,0 +1,123 @@
+# META
+- name: "meta: read"
+  uri:
+    url: http://169.254.169.254/openstack/2020-10-14/meta_data.json
+    method: GET
+    return_content: yes
+    status_code: 200
+    body_format: json
+  register: meta
+  retries: 10
+  delay: 30
+- debug: var=meta
+
+# KV
+- name: "install: kv"
+  apt:
+    pkg:
+      - python3-consul
+    state: present
+
+- name: "install galaxy collection: community.general"
+  shell: ansible-galaxy collection install community.general
+
+# vdb_master_ip
+- name: "get k/v: vdb_master_ip"
+  consul_kv:
+    key: "{{ meta.json.meta.project }}/{{ meta.json.meta.env }}/{{ meta.json.meta.service }}/vdb_master_ip"
+    host: "{{ meta.json.meta.consul_host }}"
+    port: "{{ meta.json.meta.consul_port }}"
+    scheme: "{{ meta.json.meta.consul_schema }}"
+  register: vdb_master_ip
+- debug: var=vdb_master_ip.data.Value
+
+# vdb_sysbench
+# vdb_sysbench_user
+# vdb_sysbench_password
+# vdb_sysbench_db
+- name: "get k/v: vdb_sysbench"
+  consul_kv:
+    key: "{{ meta.json.meta.project }}/{{ meta.json.meta.env }}/{{ meta.json.meta.service }}/vdb_sysbench"
+    host: "{{ meta.json.meta.consul_host }}"
+    port: "{{ meta.json.meta.consul_port }}"
+    scheme: "{{ meta.json.meta.consul_schema }}"
+  register: vdb_sysbench
+- debug: var=vdb_sysbench.data.Value
+
+- name: "get k/v: vdb_sysbench_user"
+  consul_kv:
+    key: "{{ meta.json.meta.project }}/{{ meta.json.meta.env }}/{{ meta.json.meta.service }}/vdb_sysbench_user"
+    host: "{{ meta.json.meta.consul_host }}"
+    port: "{{ meta.json.meta.consul_port }}"
+    scheme: "{{ meta.json.meta.consul_schema }}"
+  register: vdb_sysbench_user
+- debug: var=vdb_sysbench_user.data.Value
+
+- name: "get k/v: vdb_sysbench_password"
+  consul_kv:
+    key: "{{ meta.json.meta.project }}/{{ meta.json.meta.env }}/{{ meta.json.meta.service }}/vdb_sysbench_password"
+    host: "{{ meta.json.meta.consul_host }}"
+    port: "{{ meta.json.meta.consul_port }}"
+    scheme: "{{ meta.json.meta.consul_schema }}"
+  register: vdb_sysbench_password
+- debug: var=vdb_sysbench_password.data.Value
+
+- name: "get k/v: vdb_sysbench_db"
+  consul_kv:
+    key: "{{ meta.json.meta.project }}/{{ meta.json.meta.env }}/{{ meta.json.meta.service }}/vdb_sysbench_db"
+    host: "{{ meta.json.meta.consul_host }}"
+    port: "{{ meta.json.meta.consul_port }}"
+    scheme: "{{ meta.json.meta.consul_schema }}"
+  register: vdb_sysbench_db
+- debug: var=vdb_sysbench_db.data.Value
+
+# qa_url
+# qu_uuid
+- name: "get k/v: qa_url"
+  consul_kv:
+    key: "{{ meta.json.meta.project }}/{{ meta.json.meta.env }}/{{ meta.json.meta.service }}/qa_url"
+    host: "{{ meta.json.meta.consul_host }}"
+    port: "{{ meta.json.meta.consul_port }}"
+    scheme: "{{ meta.json.meta.consul_schema }}"
+  register: qa_url
+- debug: var=qa_url.data.Value
+
+- name: "get k/v: qu_uuid"
+  consul_kv:
+    key: "{{ meta.json.meta.project }}/{{ meta.json.meta.env }}/{{ meta.json.meta.service }}/qu_uuid"
+    host: "{{ meta.json.meta.consul_host }}"
+    port: "{{ meta.json.meta.consul_port }}"
+    scheme: "{{ meta.json.meta.consul_schema }}"
+  register: qu_uuid
+- debug: var=qu_uuid.data.Value
+
+# sysbench_tables
+# sysbench_table_size
+# sysbench_time
+- name: "get k/v: sysbench_tables"
+  consul_kv:
+    key: "{{ meta.json.meta.project }}/{{ meta.json.meta.env }}/{{ meta.json.meta.service }}/sysbench_tables"
+    host: "{{ meta.json.meta.consul_host }}"
+    port: "{{ meta.json.meta.consul_port }}"
+    scheme: "{{ meta.json.meta.consul_schema }}"
+  register: sysbench_tables
+- debug: var=sysbench_tables.data.Value
+
+- name: "get k/v: sysbench_table_size"
+  consul_kv:
+    key: "{{ meta.json.meta.project }}/{{ meta.json.meta.env }}/{{ meta.json.meta.service }}/sysbench_table_size"
+    host: "{{ meta.json.meta.consul_host }}"
+    port: "{{ meta.json.meta.consul_port }}"
+    scheme: "{{ meta.json.meta.consul_schema }}"
+  register: sysbench_table_size
+- debug: var=sysbench_table_size.data.Value
+
+- name: "get k/v: sysbench_time"
+  consul_kv:
+    key: "{{ meta.json.meta.project }}/{{ meta.json.meta.env }}/{{ meta.json.meta.service }}/sysbench_time"
+    host: "{{ meta.json.meta.consul_host }}"
+    port: "{{ meta.json.meta.consul_port }}"
+    scheme: "{{ meta.json.meta.consul_schema }}"
+  register: sysbench_time
+- debug: var=sysbench_time.data.Value
+
