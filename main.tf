@@ -38,7 +38,7 @@ variable "volume" {}
 variable "disk_boot_size" {}
 
 variable "mgmt_user" {}
-variable "mgmt_private_key_file" {}
+variable "mgmt_private_key" {}
 
 variable "net" {}
 variable "ip" {}
@@ -88,7 +88,7 @@ resource "openstack_compute_instance_v2" "instance" {
     connection {
       type     = "ssh"
       user     = var.mgmt_user
-      private_key = file(var.mgmt_private_key_file)
+      private_key = file(var.mgmt_private_key)
       host = var.ip
     }
   }
@@ -108,7 +108,7 @@ resource "openstack_compute_instance_v2" "instance" {
     connection {
       type     = "ssh"
       user     = var.mgmt_user
-      private_key = file(var.mgmt_private_key_file)
+      private_key = file(var.mgmt_private_key)
       host = var.ip
     }
   }
